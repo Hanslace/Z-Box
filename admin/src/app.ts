@@ -10,6 +10,10 @@ import authRouter from "./routes/auth";
 import postureRouter from "./routes/posture";
 import { initKeycloak, getSessionStore } from "./middleware/keycloak";
 import nftRouter from "./routes/nft";
+import provisionRouter from "./routes/provision";
+
+
+
 
 
 
@@ -41,6 +45,7 @@ app.use("/", indexRouter);
 app.use("/auth", authRouter);
 app.use("/api", postureRouter);
 app.use("/api", nftRouter);
+app.use("/api", provisionRouter);
 
 app.get("/views/:page", (req, res) => {
   const page = req.params.page;

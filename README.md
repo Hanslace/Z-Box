@@ -1,5 +1,7 @@
 
 sudo apt install wireguard
+sudo apt install npm
+sudo apt install zip
 
 sudo -i
 
@@ -280,21 +282,8 @@ Username: mzain (M. Zain)
 
 
 
-sudo apt install npm
 
-git add .
-git commit -m "fixes"
-git push
 
-cd ..
-cd ..
-rm -rf zbox
-git clone https://github.com/Hanslace/Z-Box.git zbox
-cd zbox
-cd admin
-npm install
-mv .env.example .env
-npm run dev
 
 
 
@@ -390,3 +379,19 @@ sudo nft delete table inet firewall
 sudo nft delete table inet zbox
 sudo nft -f /etc/nftables.conf
 
+
+
+
+git add .
+git commit -m "fixes"
+git push
+
+cd ..
+cd ..
+rm -rf zbox
+git clone https://github.com/Hanslace/Z-Box.git zbox
+cd zbox
+cd admin
+npm install
+mv .env.example .env
+sudo npm run dev
