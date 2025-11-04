@@ -286,10 +286,12 @@ git add .
 git commit -m "fixes"
 git push
 
+cd ..
+cd ..
 rm -rf zbox
 git clone https://github.com/Hanslace/Z-Box.git zbox
 cd zbox
 cd admin
-npm run install
+npm install
 mv .env.example .env
 npm run dev

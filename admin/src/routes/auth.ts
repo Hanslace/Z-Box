@@ -13,7 +13,13 @@ router.get("/logout", (req, res) => {
   const host = req.headers.host;
   const redirectUri = `${req.protocol}://${host}/`;
   const logoutUrl = kc.logoutUrl(redirectUri);
-  return res.redirect(logoutUrl);
+  if (req.session) {
+    req.session.destroy(() => {
+      res.redirect(logoutUrl);
+    });
+  } else {
+    res.redirect(logoutUrl);
+  }
 });
 
 export default router;
