@@ -40,9 +40,6 @@ services:
       - ./admin/.env.example
     ports:
       - "3000:3000"
-    networks:
-      - zbox_net
-    # if you want admin to call host's wg/nft/scripts, mount them:
     volumes:
       - /usr/local/sbin/zbox-allow.sh:/usr/local/sbin/zbox-allow.sh:ro
       - /usr/local/sbin/zbox-quarantine.sh:/usr/local/sbin/zbox-quarantine.sh:ro
