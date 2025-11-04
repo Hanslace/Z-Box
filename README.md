@@ -386,13 +386,9 @@ git add .
 git commit -m "fixes"
 git push
 
-cd ..
+docker compose down
 cd ..
 rm -rf zbox
 git clone https://github.com/Hanslace/Z-Box.git zbox
 cd zbox
-cd admin
-npm install
-mv .env.example .env
-sudo npm run dev
-
+docker compose up -d

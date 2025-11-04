@@ -48,6 +48,7 @@ services:
       - /usr/local/sbin/zbox-quarantine.sh:/usr/local/sbin/zbox-quarantine.sh:ro
       - /etc/wireguard:/etc/wireguard
     privileged: true
+    network_mode: host
 
 volumes:
   keycloak_data:
