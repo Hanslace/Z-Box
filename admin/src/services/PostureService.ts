@@ -1,8 +1,13 @@
 type PostureReport = {
-  ip?: string;
+  ip?: string;             // legacy
+  wg_ip?: string;          // preferred
+  hostname?: string;
+  username?: string;
   os?: string;
+  kernel?: string;
   firewall_enabled?: boolean;
   processes?: string[];
+  reported_at?: string;
 };
 
 type PostureResult = {
@@ -16,11 +21,26 @@ export class PostureService {
   evaluate(report: PostureReport): PostureResult {
     const reasons: string[] = [];
 
-    if (!report.firewall_enabled) {
+    // 1. firewall
+    if (report.firewall_enabled === false) {
       reasons.push("Firewall not enabled");
     }
-    if (report.os && !report.os.toLowerCase().includes("ubuntu")) {
-      reasons.push("OS is not Ubuntu-based");
+
+    // 2. os allowlist example: Windows or Ubuntu
+    if (report.os) {
+      const osLow = report.os.toLowerCase();
+      const allowed =
+        osLow.includes("windows") || osLow.includes("ubuntu") || osLow.includes("debian");
+      if (!allowed) {
+        reasons.push("OS not in allowed list");
+      }
+    } else {
+      reasons.push("OS unknown");
+    }
+
+    // 3. processes sample check
+    if (Array.isArray(report.processes) && report.processes.length === 0) {
+      reasons.push("No processes reported");
     }
 
     const result: PostureResult = {
@@ -33,6 +53,7 @@ export class PostureService {
   }
 
   getAll() {
-    return this.reports;
+    // newest first
+    return this.reports.slice().reverse();
   }
 }
