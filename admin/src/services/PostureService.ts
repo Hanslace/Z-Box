@@ -1,6 +1,7 @@
+import { NftService } from "./NftService";
+
 type PostureReport = {
-  ip?: string;             // legacy
-  wg_ip?: string;          // preferred
+  wg_ip?: string;
   hostname?: string;
   username?: string;
   os?: string;
@@ -17,30 +18,28 @@ type PostureResult = {
 
 export class PostureService {
   private reports: { report: PostureReport; result: PostureResult }[] = [];
+  private nft: NftService;
 
-  evaluate(report: PostureReport): PostureResult {
+  constructor() {
+    this.nft = new NftService();
+  }
+
+  async evaluate(report: PostureReport): Promise<PostureResult> {
     const reasons: string[] = [];
 
-    // 1. firewall
     if (report.firewall_enabled === false) {
       reasons.push("Firewall not enabled");
     }
 
-    // 2. os allowlist example: Windows or Ubuntu
     if (report.os) {
-      const osLow = report.os.toLowerCase();
+      const low = report.os.toLowerCase();
       const allowed =
-        osLow.includes("windows") || osLow.includes("ubuntu") || osLow.includes("debian");
+        low.includes("windows") || low.includes("ubuntu") || low.includes("debian");
       if (!allowed) {
         reasons.push("OS not in allowed list");
       }
     } else {
       reasons.push("OS unknown");
-    }
-
-    // 3. processes sample check
-    if (Array.isArray(report.processes) && report.processes.length === 0) {
-      reasons.push("No processes reported");
     }
 
     const result: PostureResult = {
@@ -49,11 +48,20 @@ export class PostureService {
     };
 
     this.reports.push({ report, result });
+
+    // apply nftables if we have an IP
+    if (report.wg_ip) {
+      if (result.compliant) {
+        await this.nft.allow(report.wg_ip);
+      } else {
+        await this.nft.quarantine(report.wg_ip);
+      }
+    }
+
     return result;
   }
 
   getAll() {
-    // newest first
     return this.reports.slice().reverse();
   }
 }

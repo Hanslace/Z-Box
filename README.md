@@ -295,3 +295,98 @@ cd admin
 npm install
 mv .env.example .env
 npm run dev
+
+
+
+
+sudo -i
+
+sudo mkdir -p /etc/nftables.d
+
+sudo bash -c 'cat >/etc/nftables.d/firewall.nft <<EOF
+table inet firewall {
+    define WAN_IF = ens4
+
+    chain input {
+        type filter hook input priority 0;
+
+        iif "lo" accept
+        ct state established,related accept
+
+        iif \$WAN_IF tcp dport 22 accept
+        iif \$WAN_IF udp dport 51820 accept
+
+        iif \$WAN_IF drop
+    }
+}
+EOF
+'
+
+sudo bash -c 'cat >/etc/nftables.d/zbox.nft <<EOF
+table inet zbox {
+    set compliant_peers {
+        type ipv4_addr
+        flags interval
+    }
+
+    set quarantine_peers {
+        type ipv4_addr
+        flags interval
+    }
+
+    chain wg0-in {
+        type filter hook input priority 0;
+
+        iif "wg0" ip saddr @compliant_peers accept
+
+        iif "wg0" ip saddr @quarantine_peers tcp dport 3000 accept
+        iif "wg0" ip saddr @quarantine_peers udp dport 53 accept
+        iif "wg0" ip saddr @quarantine_peers tcp dport 53 accept
+
+        iif "wg0" drop
+    }
+}
+EOF
+'
+
+sudo bash -c 'cat >/etc/nftables.conf <<EOF
+#!/usr/sbin/nft -f
+include "/etc/nftables.d/firewall.nft"
+include "/etc/nftables.d/zbox.nft"
+EOF
+'
+
+sudo bash -c 'cat >/usr/local/sbin/zbox-allow.sh <<'"'"'EOF'"'"'
+#!/bin/bash
+IP="$1"
+if [ -z "$IP" ]; then
+  echo "usage: $0 10.10.5.2"
+  exit 1
+fi
+nft add element inet zbox compliant_peers { $IP } 2>/dev/null || true
+nft delete element inet zbox quarantine_peers { $IP } 2>/dev/null || true
+EOF
+'
+
+sudo bash -c 'cat >/usr/local/sbin/zbox-quarantine.sh <<'"'"'EOF'"'"'
+#!/bin/bash
+IP="$1"
+if [ -z "$IP" ]; then
+  echo "usage: $0 10.10.5.2"
+  exit 1
+fi
+nft add element inet zbox quarantine_peers { $IP } 2>/dev/null || true
+nft delete element inet zbox compliant_peers { $IP } 2>/dev/null || true
+EOF
+'
+
+sudo chmod +x /usr/local/sbin/zbox-allow.sh /usr/local/sbin/zbox-quarantine.sh
+
+sudo nft -f /etc/nftables.conf
+sudo nft list ruleset
+
+## In case of changes
+sudo nft delete table inet firewall
+sudo nft delete table inet zbox
+sudo nft -f /etc/nftables.conf
+

@@ -1,13 +1,10 @@
-fetch('/api/posture-report')
+fetch('/api/nft-stats')
   .then(r => r.json())
-  .then(data => {
-    const total = data.length;
-    const compliant = data.filter((d) => d.result.compliant).length;
-    const quarantined = total - compliant;
-    (document.getElementById('peerCount')).innerText = String(total);
-    (document.getElementById('compliantCount')).innerText = String(compliant);
-    (document.getElementById('quarantineCount') ).innerText = String(quarantined);
+  .then(stats => {
+    document.getElementById('peerCount').innerText = String(stats.total);
+    document.getElementById('compliantCount').innerText = String(stats.compliant);
+    document.getElementById('quarantineCount').innerText = String(stats.quarantine);
   })
   .catch(() => {
-    // ignore
+    // keep zeros
   });

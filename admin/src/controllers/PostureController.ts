@@ -8,9 +8,9 @@ export class PostureController {
     this.service = new PostureService();
   }
 
-  check(req: Request, res: Response) {
+  async check(req: Request, res: Response) {
     const report = req.body;
-    const result = this.service.evaluate(report);
+    const result = await this.service.evaluate(report);
     return res.json(result);
   }
 

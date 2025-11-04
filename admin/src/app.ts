@@ -9,6 +9,9 @@ import indexRouter from "./routes/index";
 import authRouter from "./routes/auth";
 import postureRouter from "./routes/posture";
 import { initKeycloak, getSessionStore } from "./middleware/keycloak";
+import nftRouter from "./routes/nft";
+
+
 
 dotenv.config();
 
@@ -37,6 +40,7 @@ app.use("/public", express.static(path.join(__dirname, "..", "public")));
 app.use("/", indexRouter);
 app.use("/auth", authRouter);
 app.use("/api", postureRouter);
+app.use("/api", nftRouter);
 
 app.get("/views/:page", (req, res) => {
   const page = req.params.page;
