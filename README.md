@@ -282,4 +282,6 @@ Username: mzain (M. Zain)
 
 sudo apt install npm
 
-git remote set-url origin 
+git clone https://github.com/Hanslace/Z-Box.git
+cd zbox
+cd admin-portal

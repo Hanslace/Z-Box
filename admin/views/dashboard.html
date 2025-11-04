@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Z-Box Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 min-h-screen">
+  <nav class="bg-white shadow mb-6">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+      <h1 class="text-xl font-semibold">Z-Box Admin</h1>
+      <div class="space-x-4">
+        <a href="/" class="text-slate-700 font-medium">Dashboard</a>
+        <a href="/posture" class="text-slate-700 font-medium">Posture</a>
+        <a href="/auth/logout" class="text-red-500 font-medium">Logout</a>
+      </div>
+    </div>
+  </nav>
+  <main class="max-w-6xl mx-auto px-4">
+    <h2 class="text-2xl font-semibold mb-4">Overview</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-sm text-slate-500">Connected Peers</h3>
+        <p id="peerCount" class="text-3xl font-bold">0</p>
+      </div>
+      <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-sm text-slate-500">Compliant</h3>
+        <p id="compliantCount" class="text-3xl font-bold text-green-600">0</p>
+      </div>
+      <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-sm text-slate-500">Quarantined</h3>
+        <p id="quarantineCount" class="text-3xl font-bold text-red-500">0</p>
+      </div>
+    </div>
+  </main>
+  <script src="/public/js/dashboard.js"></script>
+</body>
+</html>
