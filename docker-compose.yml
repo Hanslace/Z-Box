@@ -80,7 +80,15 @@ services:
     volumes:
       - /etc/wireguard:/etc/wireguard:ro
     environment:
-      - WIREGUARD_EXPORTER_WIREGUARD_INTERFACE=wg0
+    # listen on 0.0.0.0:9586
+    - PROMETHEUS_WIREGUARD_EXPORTER_ADDRESS=0.0.0.0
+    - PROMETHEUS_WIREGUARD_EXPORTER_PORT=9586
+    # do NOT prepend sudo
+    - PROMETHEUS_WIREGUARD_EXPORTER_PREPEND_SUDO_ENABLED=false
+    # point to your interface
+    - PROMETHEUS_WIREGUARD_EXPORTER_INTERFACES=wg0
+    # optional: show nice names from config
+    - PROMETHEUS_WIREGUARD_EXPORTER_CONFIG_FILE_NAMES=/etc/wireguard/wg0.conf
 
 volumes:
   keycloak_data:
