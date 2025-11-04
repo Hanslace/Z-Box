@@ -386,7 +386,7 @@ git add .
 git commit -m "fixes"
 git push
 
-docker compose down
+docker compose down 
 cd ..
 rm -rf zbox
 git clone https://github.com/Hanslace/Z-Box.git zbox

@@ -47,9 +47,45 @@ services:
     privileged: true
     network_mode: host
 
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: zbox-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    network_mode: host
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: zbox-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+  node_exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: zbox-node-exporter
+    restart: unless-stopped
+    # so prometheus on host-mode can hit :9100
+    network_mode: host
+
+  wg_exporter:
+    image: ghcr.io/mdlayher/wireguard_exporter:latest
+    container_name: zbox-wg-exporter
+    restart: unless-stopped
+    network_mode: host
+    # needs wg binary and /etc/wireguard if you have multiple interfaces
+    volumes:
+      - /etc/wireguard:/etc/wireguard:ro
+    environment:
+      - WIREGUARD_EXPORTER_WIREGUARD_INTERFACE=wg0
+
 volumes:
   keycloak_data:
-
+  grafana_data:
+  
 networks:
   zbox_net:
     driver: bridge
