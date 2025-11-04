@@ -11,9 +11,9 @@ import postureRouter from "./routes/posture";
 import { initKeycloak, getSessionStore } from "./middleware/keycloak";
 import nftRouter from "./routes/nft";
 import provisionRouter from "./routes/provision";
+import client from "prom-client";
 
-
-
+// enable default metrics
 
 
 
@@ -46,6 +46,15 @@ app.use("/auth", authRouter);
 app.use("/api", postureRouter);
 app.use("/api", nftRouter);
 app.use("/api", provisionRouter);
+
+const collectDefaultMetrics = client.collectDefaultMetrics;
+collectDefaultMetrics();
+
+app.get("/metrics", async (_req, res) => {
+  res.set("Content-Type", client.register.contentType);
+  res.end(await client.register.metrics());
+});
+
 
 app.get("/views/:page", (req, res) => {
   const page = req.params.page;
