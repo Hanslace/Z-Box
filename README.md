@@ -26,7 +26,7 @@ exit
 
 
 PEER_NAME=initial
-PEER_IP=10.10.5.2/16
+PEER_IP=10.10.5.2/32
 
 PRIV=$(wg genkey)
 PUB=$(echo "$PRIV" | wg pubkey)

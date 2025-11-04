@@ -63,7 +63,8 @@ export class ProvisionController {
         zipPassword: zipPass, // DO NOT email this, show in UI only
       });
     } catch (e: any) {
-      return res.status(500).json({ error: e.message || "provision failed" });
+        console.error("provision failed:", e);
+        return res.status(500).json({ error: e.message || "provision failed" });
     }
   }
 }
