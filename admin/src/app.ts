@@ -8,7 +8,7 @@ import session from "express-session";
 import indexRouter from "./routes/index";
 import authRouter from "./routes/auth";
 import postureRouter from "./routes/posture";
-import { initKeycloak } from "./middleware/keycloak";
+import { initKeycloak, getSessionStore } from "./middleware/keycloak";
 
 dotenv.config();
 
@@ -19,18 +19,18 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// use the same store as keycloak
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "supersecret",
     resave: false,
     saveUninitialized: true,
+    store: getSessionStore(),
   })
 );
 
 const keycloak = initKeycloak();
-if (keycloak) {
-  app.use(keycloak.middleware());
-}
+app.use(keycloak.middleware());
 
 app.use("/public", express.static(path.join(__dirname, "..", "public")));
 

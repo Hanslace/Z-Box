@@ -282,6 +282,14 @@ Username: mzain (M. Zain)
 
 sudo apt install npm
 
-git clone https://github.com/Hanslace/Z-Box.git
+git add .
+git commit -m "fixes"
+git push
+
+rm -rf zbox
+git clone https://github.com/Hanslace/Z-Box.git zbox
 cd zbox
-cd admin-portal
+cd admin
+npm run install
+mv .env.example .env
+npm run dev
