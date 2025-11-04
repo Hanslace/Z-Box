@@ -12,7 +12,7 @@ FROM node:20-bookworm
 WORKDIR /app
 
 # install nftables in the runtime image
-RUN apt-get update && apt-get install -y nftables && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends nftables wireguard-tools iproute2 zip && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
 RUN npm install --omit=dev
