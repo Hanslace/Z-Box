@@ -395,3 +395,4 @@ cd admin
 npm install
 mv .env.example .env
 sudo npm run dev
+

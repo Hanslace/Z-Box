@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16
-    container_name: keycloak_postgres
+    container_name: keycloak-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: keycloak
@@ -10,13 +10,12 @@ services:
     volumes:
       - keycloak_data:/var/lib/postgresql/data
     networks:
-      - keycloak_net
+      - zbox_net
 
   keycloak:
     image: quay.io/keycloak/keycloak:25.0.2
     container_name: keycloak
-    command:
-      - start-dev
+    command: ["start-dev"]
     environment:
       KC_DB: postgres
       KC_DB_URL_HOST: postgres
@@ -31,10 +30,28 @@ services:
     depends_on:
       - postgres
     networks:
-      - keycloak_net
+      - zbox_net
+
+  admin:
+    build: ./admin    # folder where your admin Dockerfile is
+    container_name: zbox-admin
+    restart: unless-stopped
+    env_file:
+      - ./admin/.env.example
+    ports:
+      - "3000:3000"
+    networks:
+      - zbox_net
+    # if you want admin to call host's wg/nft/scripts, mount them:
+    volumes:
+      - /usr/local/sbin/zbox-allow.sh:/usr/local/sbin/zbox-allow.sh:ro
+      - /usr/local/sbin/zbox-quarantine.sh:/usr/local/sbin/zbox-quarantine.sh:ro
+      - /etc/wireguard:/etc/wireguard
+    privileged: true
 
 volumes:
   keycloak_data:
 
 networks:
-  keycloak_net:
+  zbox_net:
+    driver: bridge
