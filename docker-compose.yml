@@ -84,6 +84,16 @@ services:
       - EXPORT_LATEST_HANDSHAKE_DELAY=true
     volumes:
       - /etc/wireguard:/etc/wireguard:ro
+
+  math_wiz:
+    build: ./calc
+    container_name: zbox-math-wiz
+    restart: unless-stopped
+    ports:
+      - "4000:3000"
+    environment:
+      - NEXTAUTH_URL=http://10.10.0.1:4000
+      - NEXTAUTH_SECRET=heyheheyhyeheyeyh
       
 volumes:
   keycloak_data:
