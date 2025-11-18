@@ -1,8 +1,23 @@
 // app/api/auth/[...nextauth]/route.ts
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import KeycloakProvider from "next-auth/providers/keycloak";
 
-const handler = NextAuth({
+// Extend JWT type to include accessToken and refreshToken
+declare module "next-auth/jwt" {
+  interface JWT {
+    accessToken?: string;
+    refreshToken?: string;
+  }
+}
+
+// Extend Session type to include accessToken
+declare module "next-auth" {
+  interface Session {
+    accessToken?: string;
+  }
+}
+
+const authOptions: NextAuthOptions = {
   providers: [
     KeycloakProvider({
       clientId: "calc-app",
@@ -15,7 +30,6 @@ const handler = NextAuth({
   },
   callbacks: {
     async jwt({ token, account }) {
-      // On initial login, store Keycloak tokens
       if (account) {
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
@@ -23,11 +37,12 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      // Expose access token to the client
-      (session as any).accessToken = token.accessToken;
+      session.accessToken = token.accessToken;
       return session;
     },
   },
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
