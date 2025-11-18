@@ -392,4 +392,5 @@ cd ..
 rm -rf zbox
 git clone https://github.com/Hanslace/Z-Box.git zbox
 cd zbox
+dcoker compose build
 docker compose up -d
