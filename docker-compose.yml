@@ -86,7 +86,7 @@ services:
       - /etc/wireguard:/etc/wireguard:ro
 
   math_wiz:
-    build: ./calc
+    build: ./mathwiz
     container_name: zbox-math-wiz
     restart: unless-stopped
     ports:
