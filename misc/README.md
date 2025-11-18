@@ -1,8 +1,22 @@
+# Z-Box Server Bootstrap & Development Guide
 
+This document describes the full, chronological setup of a Z-Box machine, including WireGuard, Docker, Keycloak realm configuration, nftables rules, and development refresh steps.
+
+---
+
+## 1. Install Base Packages
+
+```bash
 sudo apt install wireguard
 sudo apt install npm
 sudo apt install zip
+```
 
+---
+
+## 2. WireGuard Server Setup
+
+```bash
 sudo -i
 
 cd /etc/wireguard &&
@@ -23,8 +37,13 @@ sudo systemctl start wg-quick@wg0 &&
 sudo wg show
 
 exit
+```
 
+---
 
+## 3. Create Initial WireGuard Peer
+
+```bash
 PEER_NAME=initial
 PEER_IP=10.10.5.2/32
 
@@ -47,24 +66,22 @@ PersistentKeepalive = 25
 CFG
 
 cat initial.conf
+```
 
+---
 
-sudo install -m 0755 -d /etc/apt/keyrings && \
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-  https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && \
-sudo apt update && \
-sudo apt -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin && \
-sudo usermod -aG docker $USER && \
-newgrp docker
+## 4. Install Docker Engine & Docker Compose
 
+```bash
+sudo install -m 0755 -d /etc/apt/keyrings && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg && echo   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg]   https://download.docker.com/linux/ubuntu   $(. /etc/os-release && echo "$VERSION_CODENAME") stable" |   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && sudo apt update && sudo apt -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin && sudo usermod -aG docker $USER && newgrp docker
+```
 
+---
 
-mkdir zbox && cd zbox && \
-cat > docker-compose.yml <<'YAML'
+## 5. Initial Keycloak-Only Docker Compose Stack
+
+```bash
+mkdir zbox && cd zbox && cat > docker-compose.yml <<'YAML'
 version: '3.8'
 
 services:
@@ -110,184 +127,179 @@ networks:
 YAML
 
 docker compose up -d
+```
 
+---
 
-Step-by-Step Keycloak Realm Configuration
-1. Access Keycloak Admin Console
+## 6. Step-by-Step Keycloak Realm Configuration
+
+### 6.1 Access Keycloak Admin Console
+
 After starting Keycloak with Docker Compose, navigate to:
 
-text
+```text
 http://your-server-ip:8080
-First-time login: Username = admin, Password = check your docker-compose.yml or Keycloak logs
+```
 
-2. Create a New Realm
-In the top-left dropdown, click on the current realm name (default: "Master")
+First-time login:
 
-Click "Add realm" button
+- Username: `admin`
+- Password: check your `docker-compose.yml` or Keycloak logs
 
-Fill in the realm details:
+---
 
-Realm name: z-box
+### 6.2 Create a New Realm
 
-Display name: Z-Box VPN Realm
+1. In the top-left realm dropdown, click on the current realm name (default: `Master`).
+2. Click the **“Add realm”** button.
+3. Fill in the realm details:
+   - Realm name: `z-box`
+   - Display name: `Z-Box VPN Realm`
+   - Enabled: ON
+4. Click **Create**.
 
-Enabled: ON
+---
 
-Click Create
+### 6.3 Configure Realm Settings
 
-3. Configure Realm Settings
-Navigate to Realm Settings in the left sidebar:
+Navigate to **Realm Settings** in the left sidebar.
 
-General Tab:
-Name: z-box
+**General tab:**
 
-Display name: Z-Box VPN Realm
+- Name: `z-box`
+- Display name: `Z-Box VPN Realm`
+- HTML Display name: `<b>Z-Box</b> VPN`
+- Supported locales: add any languages needed
+- User-managed access: OFF
 
-HTML Display name: <b>Z-Box</b> VPN
+**Login tab:**
 
-Supported locales: Add any languages needed
+- User registration: OFF (users will be created manually)
+- Forgot password: ON
+- Remember me: OFF
+- Verify email: OFF (for prototype, enable in production)
+- Login with email: ON
 
-User-managed access: OFF
+**Themes tab:**
 
-Login Tab:
-User registration: OFF (we'll create users manually)
+- Login theme: `keycloak` (default)
+- Account theme: `keycloak`
 
-Forgot password: ON
+---
 
-Remember me: OFF
+### 6.4 Create a Client for Z-Box Admin Portal
 
-Verify email: OFF (for prototype, enable for production)
+Go to **Clients** in the left sidebar and click **Create**.
 
-Login with email: ON
+**Basic Settings:**
 
-Themes Tab:
-Login theme: keycloak (default)
+- Client ID: `z-box-admin-portal`
+- Client Protocol: `openid-connect`
+- Root URL: `http://your-server-ip:3000` (your Node.js app URL)
 
-Account theme: keycloak
+**Capability Config:**
 
-4. Create a Client for Z-Box Admin Portal
-Go to Clients in the left sidebar and click Create:
+- Client authentication: ON
+- Authorization: OFF (for simplicity in prototype)
+- Standard flow: ON
+- Direct access grants: OFF
+- Implicit flow: OFF
 
-Basic Settings:
-Client ID: z-box-admin-portal
+**Access Settings:**
 
-Client Protocol: openid-connect
+- Valid redirect URIs:
 
-Root URL: http://your-server-ip:3000 (your Node.js app URL)
+  ```text
+  http://your-server-ip:3000/*
+  http://localhost:3000/*
+  ```
 
-Capability Config:
-Client authentication: ON
+- Web origins:
 
-Authorization: OFF (for simplicity in prototype)
+  ```text
+  http://your-server-ip:3000
+  http://localhost:3000
+  ```
 
-Standard flow: ON
+- Admin URL: `http://your-server-ip:3000`
 
-Direct access grants: OFF
+**Advanced Settings (Client → Settings):**
 
-Implicit flow: OFF
+- Access Token Lifespan: `5 minutes` (good baseline for security)
+- Proof Key for Code Exchange (PKCE): ON (recommended)
 
-Access Settings:
-Valid redirect URIs:
+---
 
-text
-http://your-server-ip:3000/*
-http://localhost:3000/*
-Web origins:
+### 6.5 Configure Client Scopes
 
-text
-http://your-server-ip:3000
-http://localhost:3000
-Admin URL: http://your-server-ip:3000
+Go to **Client scopes** and assign to your client.
 
-Advanced Settings (in Client > Settings):
-Access Token Lifespan: 5 minutes (good for security)
+**Default Client Scopes:**
 
-Proof Key for Code Exchange (PKCE): ON (recommended)
+- `openid`
+- `profile`
+- `email`
+- `roles`
 
-5. Configure Client Scopes
-Go to Client scopes and assign to your client:
+**Optional Client Scopes:**
 
-Default Client Scopes:
+- `offline_access` (if you need refresh tokens)
 
-openid
+---
 
-profile
+### 6.6 Create User Roles
 
-email
+Navigate to **Realm roles** and create:
 
-roles
+1. Click **Create role**:
+   - Role name: `z-box-user`
+   - Description: `Standard Z-Box VPN user`
 
-Optional Client Scopes:
+2. Create an additional role:
+   - Role name: `z-box-admin`
+   - Description: `Z-Box administrator`
 
-offline_access (if you need refresh tokens)
+---
 
-6. Create User Roles
-Navigate to Realm roles and create:
+### 6.7 Create User Accounts for Team Members
 
-Click "Create role":
+Go to **Users** in the left sidebar and click **Add user**.
 
-Role name: z-box-user
+For each team member (example: Haseeb Alvi):
 
-Description: Standard Z-Box VPN user
+**User Details:**
 
-Create additional roles:
+- Username: `halvi` (or `haseeb.alvi`)
+- Email: `haseeb@example.com`
+- First name: `Haseeb`
+- Last name: `Alvi`
+- Email verified: ON
+- User enabled: ON
 
-Role name: z-box-admin
+**Set Credentials:**
 
-Description: Z-Box administrator
+- Go to the **Credentials** tab:
+  - Password: set a temporary password
+  - Temporary: ON (user must change on first login)
+  - Type: Password
 
-7. Create User Accounts for Team Members
-Go to Users in the left sidebar and click Add user:
+**Assign Roles:**
 
-For each team member (e.g., Haseeb Alvi):
-User Details:
+- Go to the **Role mappings** tab:
+  - In **Available roles**, select `z-box-user` and `z-box-admin`
+  - Click **Add selected**
 
-Username: halvi (or haseeb.alvi)
+Repeat for all team members, for example:
 
-Email: haseeb@example.com
+- Username: `schishti` (Shahique Chishti)
+- Username: `shamza` (Syes Hamza Saad)
+- Username: `mzain` (M. Zain)
 
-First name: Haseeb
+---
 
-Last name: Alvi
+## 7. nftables Firewall and Z-Box Posture Tables
 
-Email verified: ON
-
-User enabled: ON
-
-Set Credentials:
-Click on the Credentials tab for the user:
-
-Password: Set a temporary password
-
-Temporary: ON (user will change on first login)
-
-Type: Password
-
-Assign Roles:
-Click on the Role mappings tab:
-
-In Available roles, select z-box-user and z-box-admin
-
-Click Add selected
-
-Repeat for all team members:
-
-Username: schishti (Shahique Chishti)
-
-Username: shamza (Syes Hamza Saad)
-
-Username: mzain (M. Zain)
-
-
-
-
-
-
-
-
-
-
-
+```bash
 sudo -i
 
 sudo mkdir -p /etc/nftables.d
@@ -310,7 +322,9 @@ table inet firewall {
 }
 EOF
 '
+```
 
+```bash
 sudo bash -c 'cat >/etc/nftables.d/zbox.nft <<EOF
 table inet zbox {
     set compliant_peers {
@@ -338,14 +352,20 @@ table inet zbox {
 }
 EOF
 '
+```
 
+```bash
 sudo bash -c 'cat >/etc/nftables.conf <<EOF
 #!/usr/sbin/nft -f
 include "/etc/nftables.d/firewall.nft"
 include "/etc/nftables.d/zbox.nft"
 EOF
 '
+```
 
+### 7.1 zbox-allow and zbox-quarantine Helper Scripts
+
+```bash
 sudo bash -c 'cat >/usr/local/sbin/zbox-allow.sh <<'"'"'EOF'"'"'
 #!/bin/bash
 IP="$1"
@@ -357,7 +377,9 @@ nft add element inet zbox compliant_peers { $IP } 2>/dev/null || true
 nft delete element inet zbox quarantine_peers { $IP } 2>/dev/null || true
 EOF
 '
+```
 
+```bash
 sudo bash -c 'cat >/usr/local/sbin/zbox-quarantine.sh <<'"'"'EOF'"'"'
 #!/bin/bash
 IP="$1"
@@ -369,28 +391,42 @@ nft add element inet zbox quarantine_peers { $IP } 2>/dev/null || true
 nft delete element inet zbox compliant_peers { $IP } 2>/dev/null || true
 EOF
 '
+```
 
+```bash
 sudo chmod +x /usr/local/sbin/zbox-allow.sh /usr/local/sbin/zbox-quarantine.sh
 
 sudo nft -f /etc/nftables.conf
 sudo nft list ruleset
+```
 
-## In case of changes
+**In case of changes:**
+
+```bash
 sudo nft delete table inet firewall
 sudo nft delete table inet zbox
 sudo nft -f /etc/nftables.conf
+```
 
+---
 
+## 8. Development Workflow: Commit and Refresh Deployment
 
+From your development machine (inside the repo):
 
+```bash
 git add .
 git commit -m "fixes"
 git push
+```
 
+On the Z-Box server:
+
+```bash
 docker compose down 
 cd ..
 rm -rf zbox
 git clone https://github.com/Hanslace/Z-Box.git zbox
 cd zbox
-dcoker compose build
 docker compose up -d
+```
