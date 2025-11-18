@@ -328,7 +328,8 @@ table inet zbox {
 
         iif "wg0" ip saddr @compliant_peers accept
 
-        iif "wg0" ip saddr @quarantine_peers tcp dport 443 accept
+        iif "wg0" ip saddr @quarantine_peers tcp dport 3000 accept
+        iif "wg0" ip saddr @quarantine_peers tcp dport 4000 accept
         iif "wg0" ip saddr @quarantine_peers udp dport 53 accept
         iif "wg0" ip saddr @quarantine_peers tcp dport 53 accept
 
