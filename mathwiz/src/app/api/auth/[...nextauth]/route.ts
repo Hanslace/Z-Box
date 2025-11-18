@@ -2,7 +2,6 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import KeycloakProvider from "next-auth/providers/keycloak";
 
-// Extend JWT type to include accessToken and refreshToken
 declare module "next-auth/jwt" {
   interface JWT {
     accessToken?: string;
@@ -10,7 +9,6 @@ declare module "next-auth/jwt" {
   }
 }
 
-// Extend Session type to include accessToken
 declare module "next-auth" {
   interface Session {
     accessToken?: string;
@@ -18,11 +16,15 @@ declare module "next-auth" {
 }
 
 const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     KeycloakProvider({
-      clientId: "calc-app",
-      clientSecret: "", // public client
-      issuer: "http://10.10.0.1:8080/realms/zbox",
+      clientId: process.env.KEYCLOAK_CLIENT_ID ?? "calc-app",
+      clientSecret: "", // public client → no secret
+      issuer: process.env.KEYCLOAK_ISSUER,
+      authorization: {
+        params: { scope: "openid profile email" },
+      },
     }),
   ],
   session: {
@@ -31,8 +33,8 @@ const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, account }) {
       if (account) {
-        token.accessToken = account.access_token;
-        token.refreshToken = account.refresh_token;
+        token.accessToken = account.access_token as string | undefined;
+        token.refreshToken = account.refresh_token as string | undefined;
       }
       return token;
     },
@@ -44,5 +46,4 @@ const authOptions: NextAuthOptions = {
 };
 
 const handler = NextAuth(authOptions);
-
 export { handler as GET, handler as POST };

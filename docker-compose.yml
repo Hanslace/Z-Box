@@ -89,11 +89,13 @@ services:
     build: ./mathwiz
     container_name: zbox-math-wiz
     restart: unless-stopped
-    ports:
-      - "4000:3000"
     environment:
-      - NEXTAUTH_URL=http://10.10.0.1:4000
-      - NEXTAUTH_SECRET=heyheheyhyeheyeyh
+      NEXTAUTH_URL: "http://10.10.0.1:4000"
+      NEXTAUTH_SECRET: "change_this_to_long_random_string"
+      KEYCLOAK_CLIENT_ID: "math-wiz"
+      KEYCLOAK_ISSUER: "http://keycloak:8080/realms/zbox"
+    networks:
+      - zbox_net
       
 volumes:
   keycloak_data:
