@@ -72,23 +72,18 @@ services:
     network_mode: host
 
   wg_exporter:
-    image: ghcr.io/mdlayher/wireguard_exporter:latest
+    image: mindflavor/prometheus-wireguard-exporter:3.6.5
     container_name: zbox-wg-exporter
     restart: unless-stopped
     network_mode: host
-    # needs wg binary and /etc/wireguard if you have multiple interfaces
     volumes:
       - /etc/wireguard:/etc/wireguard:ro
     environment:
-    # listen on 0.0.0.0:9586
-    - PROMETHEUS_WIREGUARD_EXPORTER_ADDRESS=0.0.0.0
-    - PROMETHEUS_WIREGUARD_EXPORTER_PORT=9586
-    # do NOT prepend sudo
-    - PROMETHEUS_WIREGUARD_EXPORTER_PREPEND_SUDO_ENABLED=false
-    # point to your interface
-    - PROMETHEUS_WIREGUARD_EXPORTER_INTERFACES=wg0
-    # optional: show nice names from config
-    - PROMETHEUS_WIREGUARD_EXPORTER_CONFIG_FILE_NAMES=/etc/wireguard/wg0.conf
+      - PROMETHEUS_WIREGUARD_EXPORTER_ADDRESS=0.0.0.0
+      - PROMETHEUS_WIREGUARD_EXPORTER_PORT=9586
+      - PROMETHEUS_WIREGUARD_EXPORTER_PREPEND_SUDO_ENABLED=false
+      - PROMETHEUS_WIREGUARD_EXPORTER_INTERFACES=wg0
+      - PROMETHEUS_WIREGUARD_EXPORTER_CONFIG_FILE_NAMES=/etc/wireguard/wg0.conf
 
 volumes:
   keycloak_data:
