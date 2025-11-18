@@ -1,0 +1,35 @@
+# Single HTTPS entrypoint for all Z-Box apps
+:443 {
+    tls internal
+
+    # Optional: strict TLS
+    tls {
+        protocols tls1.2 tls1.3
+    }
+
+    # Default: redirect bare / to admin
+    @root path /
+    handle @root {
+        redir /admin/
+    }
+
+    # Admin portal: https://10.10.0.1/admin/
+    handle_path /admin/* {
+        reverse_proxy 127.0.0.1:3000
+    }
+
+    # Grafana: https://10.10.0.1/grafana/
+    handle_path /grafana/* {
+        reverse_proxy 127.0.0.1:3001
+    }
+
+    # Prometheus: https://10.10.0.1/prometheus/
+    handle_path /prometheus/* {
+        reverse_proxy 127.0.0.1:9090
+    }
+
+    # Keycloak: https://10.10.0.1/keycloak/
+    handle_path /keycloak/* {
+        reverse_proxy 127.0.0.1:8080
+    }
+}
