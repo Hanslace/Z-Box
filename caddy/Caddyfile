@@ -1,17 +1,11 @@
-# Single HTTPS entrypoint for all Z-Box apps
 :443 {
-    tls internal
-
-    # Optional: strict TLS
-    tls {
+    # Single TLS block: internal CA + protocol limits
+    tls internal {
         protocols tls1.2 tls1.3
     }
 
-    # Default: redirect bare / to admin
-    @root path /
-    handle @root {
-        redir /admin/
-    }
+    # Redirect bare "/" to /admin/
+    redir / /admin/
 
     # Admin portal: https://10.10.0.1/admin/
     handle_path /admin/* {
