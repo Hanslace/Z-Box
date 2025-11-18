@@ -29,7 +29,7 @@ COPY --from=builder /app/public ./public
 # If you have a next.config.* file:
 COPY --from=builder /app/next.config.* ./
 
-EXPOSE 3000
+EXPOSE 4000
 
 # npm start should run "next start"
 CMD ["npm", "start"]
