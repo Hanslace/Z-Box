@@ -71,20 +71,19 @@ services:
     # so prometheus on host-mode can hit :9100
     network_mode: host
 
-  wg_exporter:
-    image: mindflavor/prometheus-wireguard-exporter:3.6.5
-    container_name: zbox-wg-exporter
-    restart: unless-stopped
-    network_mode: host
-    volumes:
-      - /etc/wireguard:/etc/wireguard:ro
-    environment:
-      - PROMETHEUS_WIREGUARD_EXPORTER_ADDRESS=0.0.0.0
-      - PROMETHEUS_WIREGUARD_EXPORTER_PORT=9586
-      - PROMETHEUS_WIREGUARD_EXPORTER_PREPEND_SUDO_ENABLED=false
-      - PROMETHEUS_WIREGUARD_EXPORTER_INTERFACES=wg0
-      - PROMETHEUS_WIREGUARD_EXPORTER_CONFIG_FILE_NAMES=/etc/wireguard/wg0.conf
-
+    wg_exporter:
+      image: mindflavor/prometheus-wireguard-exporter:3.5.0
+      container_name: zbox-wg-exporter
+      restart: unless-stopped
+      network_mode: host
+      cap_add:
+        - NET_ADMIN
+      environment:
+        - PROMETHEUS_WIREGUARD_EXPORTER_PREPEND_SUDO_ENABLED=false
+        - PROMETHEUS_WIREGUARD_EXPORTER_INTERFACES=wg0
+        - EXPORT_LATEST_HANDSHAKE_DELAY=true
+      volumes:
+        - /etc/wireguard:/etc/wireguard:ro
 volumes:
   keycloak_data:
   grafana_data:
