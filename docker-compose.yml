@@ -89,8 +89,6 @@ services:
     build: ./mathwiz
     container_name: zbox-math-wiz
     restart: unless-stopped
-    ports:
-      - "4000:3000"
     environment:
       - NEXTAUTH_URL=http://10.10.0.1:4000
       - NEXTAUTH_SECRET=heyheheyhyeheyeyh
