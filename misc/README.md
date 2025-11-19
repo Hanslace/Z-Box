@@ -81,51 +81,8 @@ sudo install -m 0755 -d /etc/apt/keyrings && curl -fsSL https://download.docker.
 ## 5. Initial Keycloak-Only Docker Compose Stack
 
 ```bash
-mkdir zbox && cd zbox && cat > docker-compose.yml <<'YAML'
-version: '3.8'
-
-services:
-  postgres:
-    image: postgres:16
-    container_name: keycloak_postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: keycloak
-      POSTGRES_USER: keycloak
-      POSTGRES_PASSWORD: keycloakpass
-    volumes:
-      - keycloak_data:/var/lib/postgresql/data
-    networks:
-      - keycloak_net
-
-  keycloak:
-    image: quay.io/keycloak/keycloak:25.0.2
-    container_name: keycloak
-    command:
-      - start-dev
-    environment:
-      KC_DB: postgres
-      KC_DB_URL_HOST: postgres
-      KC_DB_URL_DATABASE: keycloak
-      KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: keycloakpass
-      KC_HTTP_PORT: 8080
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin123
-    ports:
-      - "8080:8080"
-    depends_on:
-      - postgres
-    networks:
-      - keycloak_net
-
-volumes:
-  keycloak_data:
-
-networks:
-  keycloak_net:
-YAML
-
+git clone https://github.com/Hanslace/Z-Box.git zbox
+cd zbox
 docker compose up -d
 ```
 
@@ -343,7 +300,6 @@ table inet zbox {
         iif "wg0" ip saddr @compliant_peers accept
 
         iif "wg0" ip saddr @quarantine_peers tcp dport 3000 accept
-        iif "wg0" ip saddr @quarantine_peers tcp dport 4000 accept
         iif "wg0" ip saddr @quarantine_peers udp dport 53 accept
         iif "wg0" ip saddr @quarantine_peers tcp dport 53 accept
 
@@ -429,4 +385,19 @@ rm -rf zbox
 git clone https://github.com/Hanslace/Z-Box.git zbox
 cd zbox
 docker compose up -d
+```
+
+On the Z-Box client for posture check:
+
+```bash
+git clone --no-checkout https://github.com/Hanslace/Z-Box.git zbox 
+cd zbox
+git sparse-checkout init --cone
+git sparse-checkout set client_posture
+git checkout main
+cd client_posture
+python -m venv env
+source env/Scripts/activate
+pip install -r requirements.txt
+python main.py
 ```

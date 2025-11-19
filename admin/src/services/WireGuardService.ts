@@ -79,5 +79,6 @@ PersistentKeepalive = 25
 
   addPeerToServer(clientPubKey: string, clientIp: string) {
     execSync(`wg set ${this.iface} peer ${clientPubKey} allowed-ips ${clientIp}/32`);
+    execSync(`/usr/local/sbin/zbox-quarantine.sh ${clientIp}`);
   }
 }
