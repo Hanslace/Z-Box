@@ -246,12 +246,6 @@ For each team member (example: Haseeb Alvi):
   - In **Available roles**, select `z-box-user` and `z-box-admin`
   - Click **Add selected**
 
-Repeat for all team members, for example:
-
-- Username: `schishti` (Shahique Chishti)
-- Username: `shamza` (Syes Hamza Saad)
-- Username: `mzain` (M. Zain)
-
 ---
 
 ## 7. nftables Firewall and Z-Box Posture Tables
@@ -384,6 +378,7 @@ cd ..
 rm -rf zbox
 git clone https://github.com/Hanslace/Z-Box.git zbox
 cd zbox
+docker compose build
 docker compose up -d
 ```
 

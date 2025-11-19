@@ -39,5 +39,5 @@ export function getKeycloak() {
 
 export function ensureAuth(req: any, res: any, next: any) {
   const kc = getKeycloak();
-  return kc.protect()(req, res, next);
+  return kc.protect("realm:z-box-admin")(req, res, next);
 }
